@@ -7,21 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Routers(r *gin.Engine) *gin.Engine {
-	r.Use(middleware.CORSMiddleware())
-	r.POST("/register", controller.Register)
-	r.POST("/login", controller.Login)
-	r.GET("/user", middleware.AuthMiddleware(), controller.GetUserInfo)
-	r.POST("/upload/avatar", controller.UploadAvatarImg)
-	return r
-}
-
 func CollectRoutes(r *gin.Engine) *gin.Engine {
 	r.Use(middleware.CORSMiddleware())
 	r.POST("/register", controller.Register)
 	r.POST("/login", controller.Login)
 	r.POST("/upload/avatar", controller.UploadAvatarImg)
-	r.GET("/user", middleware.AuthMiddleware(), controller.GetUserInfo)
 
 	articleRoutes := r.Group("/article")
 	articleController := controller.NewArticleController()
@@ -30,6 +20,14 @@ func CollectRoutes(r *gin.Engine) *gin.Engine {
 	articleRoutes.DELETE(":id", middleware.AuthMiddleware(), articleController.Delete)
 	articleRoutes.GET(":id", articleController.Show)
 	articleRoutes.POST("list", articleController.List)
+
+	userRoutes := r.Group("/user")
+	userRoutes.Use(middleware.AuthMiddleware())
+	userRoutes.GET("", controller.GetUserInfo)
+	userRoutes.GET("briefInfo/:id", controller.GetBriefInfo)
+	userRoutes.GET("articles/:id", controller.GetUserArticleList)
+	userRoutes.PUT("avatar/:id", controller.ModifyAvatar)
+	userRoutes.PUT("name/:id", controller.ModifyName)
 
 	return r
 }

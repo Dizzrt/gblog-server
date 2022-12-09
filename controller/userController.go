@@ -4,6 +4,7 @@ import (
 	"gblog-server/common"
 	"gblog-server/model"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -102,4 +103,87 @@ func GetUserInfo(ctx *gin.Context) {
 		},
 		"msg": "get user info successfully!",
 	})
+}
+
+func GetBriefInfo(ctx *gin.Context) {
+	db := common.GetDB()
+
+	userID := ctx.Params.ByName("id")
+	user, _ := ctx.Get("user")
+
+	var curUser model.User
+	if userID == strconv.Itoa(int(user.(model.User).ID)) {
+		curUser = user.(model.User)
+	} else {
+		db.Where("id = ?", userID).First(&curUser)
+		if curUser.ID == 0 {
+			common.Fail(ctx, nil, "用户不存在")
+			return
+		}
+	}
+
+	common.Success(ctx, gin.H{
+		"id":      curUser.ID,
+		"name":    curUser.UserName,
+		"avatar":  curUser.Avatar,
+		"loginID": user.(model.User).ID,
+	}, "success")
+}
+
+func GetUserArticleList(ctx *gin.Context) {
+	db := common.GetDB()
+	userID := ctx.Params.ByName("id")
+
+	user, _ := ctx.Get("user")
+	var curUser model.User
+
+	if userID == strconv.Itoa(int(user.(model.User).ID)) {
+		curUser = user.(model.User)
+	} else {
+		db.Where("id = ?", userID).First(&curUser)
+		if curUser.ID == 0 {
+			common.Fail(ctx, nil, "用户不存在")
+			return
+		}
+	}
+
+	var articles []model.ArticleInfo
+	db.Table("articles").Select("id, title, LEFT(content,80) As content, head_image, created_at").Where("user_id = ?", userID).Order("created_at desc").Find(&articles)
+
+	common.Success(ctx, gin.H{"articles": articles}, "success")
+}
+
+func ModifyAvatar(ctx *gin.Context) {
+	db := common.GetDB()
+	user, _ := ctx.Get("user")
+
+	var requestUser model.User
+	ctx.Bind(&requestUser)
+	avatar := requestUser.Avatar
+
+	var curUser model.User
+	db.Where("id = ?", user.(model.User).ID).First(&curUser)
+
+	if err := db.Model(&curUser).Update("avatar", avatar).Error; err != nil {
+		common.Fail(ctx, nil, "更新失败")
+		return
+	}
+	common.Success(ctx, nil, "更新成功")
+}
+
+func ModifyName(ctx *gin.Context) {
+	db := common.GetDB()
+
+	user, _ := ctx.Get("user")
+	var requestUser model.User
+	ctx.Bind(&requestUser)
+	userName := requestUser.UserName
+
+	var curUser model.User
+	db.Where("id = ?", user.(model.User).ID).First(&curUser)
+	if err := db.Model(&curUser).Update("user_name", userName).Error; err != nil {
+		common.Fail(ctx, nil, "更新失败")
+		return
+	}
+	common.Success(ctx, nil, "更新成功")
 }
