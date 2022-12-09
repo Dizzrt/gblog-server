@@ -13,6 +13,7 @@ func main() {
 
 	r := gin.Default()
 	r.StaticFS("/images", http.Dir("./static/images"))
-	router.Routers(r)
+	// router.Routers(r)
+	router.CollectRoutes(r)
 	panic(r.Run())
 }

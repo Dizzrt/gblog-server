@@ -92,11 +92,14 @@ func Login(ctx *gin.Context) {
 
 }
 
-func GetInfo(ctx *gin.Context) {
+func GetUserInfo(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	ctx.JSON(http.StatusOK, gin.H{
 		"code": 200,
-		"data": gin.H{"id": user.(model.User).ID},
-		"msg":  "get info successfully!",
+		"data": gin.H{
+			"id":     user.(model.User).ID,
+			"avatar": user.(model.User).Avatar,
+		},
+		"msg": "get user info successfully!",
 	})
 }

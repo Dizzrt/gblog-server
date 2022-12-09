@@ -3,6 +3,7 @@ package common
 import (
 	"fmt"
 	"gblog-server/model"
+	"net/url"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -17,8 +18,9 @@ func InitDB() *gorm.DB {
 	port := "3306"
 	database := "gblog"
 	charset := "utf8"
+	loc := "Asia/Shanghai"
 
-	args := fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=%s&parseTime=true", user, password, host, port, database, charset)
+	args := fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=%s&parseTime=true&loc=%s", user, password, host, port, database, charset, url.QueryEscape(loc))
 	db, err := gorm.Open(mysql.Open(args), &gorm.Config{})
 
 	if err != nil {
