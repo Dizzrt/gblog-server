@@ -25,9 +25,9 @@ func CollectRoutes(r *gin.Engine) *gin.Engine {
 	userRoutes.Use(middleware.AuthMiddleware())
 	userRoutes.GET("", controller.GetUserInfo)
 	userRoutes.GET("briefInfo/:id", controller.GetBriefInfo)
-	userRoutes.GET("articles/:id", controller.GetUserArticleList)
-	userRoutes.PUT("avatar/:id", controller.ModifyAvatar)
-	userRoutes.PUT("name/:id", controller.ModifyName)
+	userRoutes.GET("articles", controller.GetUserArticleList)
+	userRoutes.PUT("avatar", controller.ModifyAvatar)
+	userRoutes.PUT("name", controller.ModifyName)
 
 	return r
 }

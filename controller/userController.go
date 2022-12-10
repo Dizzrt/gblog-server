@@ -132,25 +132,17 @@ func GetBriefInfo(ctx *gin.Context) {
 
 func GetUserArticleList(ctx *gin.Context) {
 	db := common.GetDB()
-	userID := ctx.Params.ByName("id")
 
 	user, _ := ctx.Get("user")
-	var curUser model.User
-
-	if userID == strconv.Itoa(int(user.(model.User).ID)) {
-		curUser = user.(model.User)
-	} else {
-		db.Where("id = ?", userID).First(&curUser)
-		if curUser.ID == 0 {
-			common.Fail(ctx, nil, "用户不存在")
-			return
-		}
-	}
-
 	var articles []model.ArticleInfo
-	db.Table("articles").Select("id, title, LEFT(content,80) As content, head_image, created_at").Where("user_id = ?", userID).Order("created_at desc").Find(&articles)
+	db.Table("articles").Select("id, title, LEFT(content,80) As content, head_image, created_at").Where("user_id = ?", user.(model.User).ID).Order("created_at desc").Find(&articles)
 
-	common.Success(ctx, gin.H{"articles": articles}, "success")
+	common.Success(ctx, gin.H{
+		"id":       user.(model.User).ID,
+		"name":     user.(model.User).UserName,
+		"avatar":   user.(model.User).Avatar,
+		"articles": articles,
+	}, "success")
 }
 
 func ModifyAvatar(ctx *gin.Context) {
